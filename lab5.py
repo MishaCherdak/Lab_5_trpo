@@ -8,7 +8,7 @@ class Main(tk.Frame):
         super().__init__(root)
         self.init_main()  # toolbar
         self.db = db
-        self.view_records()  # Отображение данных
+        self.view_records()  # Отображение данных БД
 
     def init_main(self):
         toolbar = tk.Frame(bg='#d7d8e0', bd=2)
@@ -17,6 +17,11 @@ class Main(tk.Frame):
         btn_open_dialog = tk.Button(toolbar, text='Добавить студента', command=self.open_dialog, bg='#d7d8e0', bd=5,
                                     compound=tk.TOP)
         btn_open_dialog.pack(side=tk.LEFT)  # Кнопка добавить
+
+        btn_edit_dialog = tk.Button(toolbar, text='Редактировать', bg='#d7d8e0', bd=5, compound=tk.TOP,
+                                    command=self.open_update_dialog)  # Кнопка редактировать
+
+        btn_edit_dialog.pack(side=tk.LEFT)
 
         self.tree = ttk.Treeview(self, columns=('ID', "name", "surname", "patronymic", "faculty", "gruppa",
                                                 "course", "direction_of_work"), height=18, show='headings')
@@ -43,17 +48,30 @@ class Main(tk.Frame):
 
         self.tree.pack()
 
-    def records(self, name, surname, patronymic, faculty, gruppa, course, direction_of_work):  # Передача данных в INSERT INTO
+    def records(self, name, surname, patronymic, faculty, gruppa, course,
+                direction_of_work):  # Передача данных в INSERT INTO
         self.db.insert_data(name, surname, patronymic, faculty, gruppa, course, direction_of_work)
         self.view_records()
 
-    def view_records(self):  # Отображение бд на экране
+    def update_record(self, name, surname, patronymic, faculty, gruppa, course,
+                      direction_of_work):  # Обновление данных БД
+        self.db.c.execute('''UPDATE students SET name=?, surname=?, patronymic=?, 
+        faculty=?, gruppa=?, course=?, direction_of_work=? WHERE ID=?''',
+                          (name, surname, patronymic, faculty, gruppa, course, direction_of_work,
+                           self.tree.set(self.tree.selection()[0], '#1')))
+        self.db.conn.commit()
+        self.view_records()
+
+    def view_records(self):  # Отображение БД на экране
         self.db.c.execute('''SELECT * FROM students''')
         [self.tree.delete(i) for i in self.tree.get_children()]
         [self.tree.insert('', 'end', values=row) for row in self.db.c.fetchall()]
 
-    def open_dialog(self):
+    def open_dialog(self):  # Child "Добавить студента"
         Child()
+
+    def open_update_dialog(self):
+        Update()
 
 
 class Child(tk.Toplevel):  # Создание окна добавить
@@ -122,18 +140,38 @@ class Child(tk.Toplevel):  # Создание окна добавить
         btn_cansel = ttk.Button(self, text="Закрыть", command=self.destroy)
         btn_cansel.place(x=220, y=260)  # Кнопка закрыть
 
-        btn_ok = ttk.Button(self, text="Добавить")  # Кнопка добавить
-        btn_ok.place(x=140, y=260)
-        btn_ok.bind('<Button-1>', lambda event: self.view.records(self.entry_name.get(),
-                                                                  self.entry_surname.get(),
-                                                                  self.entry_patronymic.get(),
-                                                                  self.combobox_faculty.get(),
-                                                                  self.entry_gruppa.get(),
-                                                                  self.combobox_course.get(),
-                                                                  self.combobox_direction_of_work.get()))
+        self.btn_ok = ttk.Button(self, text="Добавить")  # Кнопка добавить
+        self.btn_ok.place(x=140, y=260)
+        self.btn_ok.bind('<Button-1>', lambda event: self.view.records(self.entry_name.get(),
+                                                                       self.entry_surname.get(),
+                                                                       self.entry_patronymic.get(),
+                                                                       self.combobox_faculty.get(),
+                                                                       self.entry_gruppa.get(),
+                                                                       self.combobox_course.get(),
+                                                                       self.combobox_direction_of_work.get()))
 
         self.grab_set()
         self.focus_set()
+
+
+class Update(Child):
+    def __init__(self):
+        super().__init__()
+        self.init_edit()
+        self.view = app
+
+    def init_edit(self):  # Кнопка редактировать
+        self.title('Редактировать запись')
+        btn_edit = ttk.Button(self, text='Редактировать')
+        btn_edit.place(x=120, y=260)
+        btn_edit.bind('<Button-1>', lambda event: self.view.update_record(self.entry_name.get(),
+                                                                          self.entry_surname.get(),
+                                                                          self.entry_patronymic.get(),
+                                                                          self.combobox_faculty.get(),
+                                                                          self.entry_gruppa.get(),
+                                                                          self.combobox_course.get(),
+                                                                          self.combobox_direction_of_work.get()))
+        self.btn_ok.destroy()
 
 
 class DB:  # База данных
