@@ -73,7 +73,7 @@ class Main(tk.Frame):
 
     def delete_records(self):  # Удаление записей
         for selection_item in self.tree.selection():  # Цикл для получения уникальных идентификаторов
-            self.db.c.execute('''DELETE FROM students WHERE id=?''', (self.tree.set(selection_item, '#1')))
+            self.db.c.execute('''DELETE FROM students WHERE id=?''', (self.tree.set(selection_item, '#1'),))
         self.db.conn.commit()
         self.view_records()
 
