@@ -23,6 +23,10 @@ class Main(tk.Frame):
 
         btn_edit_dialog.pack(side=tk.LEFT)
 
+        btn_delete_records = tk.Button(toolbar, text='Удалить студента', bg='#d7d8e0', bd=5, compound=tk.TOP,
+                                       command=self.delete_records)  # Кнопка редактировать
+        btn_delete_records.pack(side=tk.LEFT)
+
         self.tree = ttk.Treeview(self, columns=('ID', "name", "surname", "patronymic", "faculty", "gruppa",
                                                 "course", "direction_of_work"), height=18, show='headings')
 
@@ -66,6 +70,12 @@ class Main(tk.Frame):
         self.db.c.execute('''SELECT * FROM students''')
         [self.tree.delete(i) for i in self.tree.get_children()]
         [self.tree.insert('', 'end', values=row) for row in self.db.c.fetchall()]
+
+    def delete_records(self):  # Удаление записей
+        for selection_item in self.tree.selection():  # Цикл для получения уникальных идентификаторов
+            self.db.c.execute('''DELETE FROM students WHERE id=?''', (self.tree.set(selection_item, '#1')))
+        self.db.conn.commit()
+        self.view_records()
 
     def open_dialog(self):  # Child "Добавить студента"
         Child()
