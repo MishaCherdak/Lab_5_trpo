@@ -127,8 +127,7 @@ class Child(tk.Toplevel):  # Создание окна добавить
                                                            u"Исторический (ИИМО)",
                                                            u"Институт психологии (ИП)",
                                                            u"Искусств и дизайна (ИИД)",
-                                                           u"Институт социальных наук (ИСН)",
-                                                           u"Исторический (ИИМО)"])
+                                                           u"Институт социальных наук (ИСН)"])
         self.combobox_faculty.current(0)
         self.combobox_faculty.place(x=135, y=120)
 
@@ -169,6 +168,8 @@ class Update(Child):
         super().__init__()
         self.init_edit()
         self.view = app
+        self.db = db
+        self.default_data()
 
     def init_edit(self):  # Кнопка редактировать
         self.title('Редактировать запись')
@@ -182,6 +183,44 @@ class Update(Child):
                                                                           self.combobox_course.get(),
                                                                           self.combobox_direction_of_work.get()))
         self.btn_ok.destroy()
+
+    def default_data(self): # Подтягивание старых данных в поля редактирования
+        self.db.c.execute('''SELECT * FROM students WHERE id=?''',
+                          (self.view.tree.set(self.view.tree.selection()[0], '#1'),))
+        row = self.db.c.fetchone()  # Берем строки с БД и выводим их в поле редактировать
+        self.entry_name.insert(0, row[1])
+        self.entry_surname.insert(0, row[2])
+        self.entry_patronymic.insert(0, row[3])
+        # Масштабная, но рабочая проверка значения для combobox
+        if row[4] != 'Биологии и биотехники (ИББ)' and row[4] != 'Колледж АГУ (СПО)' and row[4] != 'Исторический (ИИМО)' and row[4] != 'Институт психологии (ИП)' and row[4] != 'Искусств и дизайна (ИИД)' and row[4] != 'Институт социальных наук (ИСН)':
+            self.combobox_faculty.current(1)    # Институт географии (ИНГЕО), 1
+        if row[4] != 'Биологии и биотехники (ИББ)' and row[4] != 'Институт географии (ИНГЕО)' and row[4] != 'Исторический (ИИМО)' and row[4] != 'Институт психологии (ИП)' and row[4] != 'Искусств и дизайна (ИИД)' and row[4] != 'Институт социальных наук (ИСН)':
+            self.combobox_faculty.current(2)    # Колледж АГУ (СПО), 2
+        if row[4] != 'Биологии и биотехники (ИББ)' and row[4] != 'Институт географии (ИНГЕО)' and row[4] != 'Колледж АГУ (СПО)' and row[4] != 'Институт психологии (ИП)' and row[4] != 'Искусств и дизайна (ИИД)' and row[4] != 'Институт социальных наук (ИСН)':
+            self.combobox_faculty.current(3)    # Исторический (ИИМО), 3
+        if row[4] != 'Биологии и биотехники (ИББ)' and row[4] != 'Институт географии (ИНГЕО)' and row[4] != 'Колледж АГУ (СПО)' and row[4] != 'Исторический (ИИМО)' and row[4] != 'Искусств и дизайна (ИИД)' and row[4] != 'Институт социальных наук (ИСН)':
+            self.combobox_faculty.current(4)    # Институт психологии (ИП), 4
+        if row[4] != 'Биологии и биотехники (ИББ)' and row[4] != 'Институт географии (ИНГЕО)' and row[4] != 'Колледж АГУ (СПО)' and row[4] != 'Исторический (ИИМО)' and row[4] != 'Институт психологии (ИП)' and row[4] != 'Институт социальных наук (ИСН)':
+            self.combobox_faculty.current(5)    # Искусств и дизайна (ИИД), 5
+        if row[4] != 'Биологии и биотехники (ИББ)' and row[4] != 'Институт географии (ИНГЕО)' and row[4] != 'Колледж АГУ (СПО)' and row[4] != 'Исторический (ИИМО)' and row[4] != 'Институт психологии (ИП)' and row[4] != 'Искусств и дизайна (ИИД)':
+            self.combobox_faculty.current(6)    # Институт социальных наук (ИСН), 6
+        self.entry_gruppa.insert(0, row[5])
+        if row[6] != 'Первый' and row[6] != 'Третий' and row[6] != 'Четвертый' and row[6] != 'Пятый':
+            self.combobox_course.current(1) # Второй, 1
+        if row[6] != 'Первый' and row[6] != 'Второй' and row[6] != 'Четвертый' and row[6] != 'Пятый':
+            self.combobox_course.current(2)
+        if row[6] != 'Первый' and row[6] != 'Второй' and row[6] != 'Третий' and row[6] != 'Пятый':
+            self.combobox_course.current(3)
+        if row[6] != 'Первый' and row[6] != 'Второй' and row[6] != 'Третий' and row[6] != 'Четвертый':
+            self.combobox_course.current(4)
+        if row[7] != 'Научное студенческое общество' and row[7] != 'Спорт' and row[7] != 'Культура и творчество' and row[7] != 'Штаб трудовых дел':
+            self.combobox_direction_of_work.current(1)
+        if row[7] != 'Научное студенческое общество' and row[7] != 'Социальная поддержка' and row[7] != 'Культура и творчество' and row[7] != 'Штаб трудовых дел':
+            self.combobox_direction_of_work.current(2)
+        if row[7] != 'Научное студенческое общество' and row[7] != 'Социальная поддержка' and row[7] != 'Спорт' and row[7] != 'Штаб трудовых дел':
+            self.combobox_direction_of_work.current(3)
+        if row[7] != 'Научное студенческое общество' and row[7] != 'Социальная поддержка' and row[7] != 'Спорт' and row[7] != 'Культура и творчество':
+            self.combobox_direction_of_work.current(4)
 
 
 class DB:  # База данных
